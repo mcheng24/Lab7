@@ -55,7 +55,14 @@ public class MorseDecoder {
         for (int binIndex = 0; binIndex < totalBinCount; binIndex++) {
             // Get the right number of samples from the inputFile
             // Sum all the samples together and store them in the returnBuffer
+            int temp = inputFile.readFrames(sampleBuffer, BIN_SIZE);
+            double sum = 0;
+            for (int x = 0; x < temp; x++) {
+                sum += Math.abs(sampleBuffer[x]);
+            }
+            returnBuffer[binIndex] = sum;
         }
+
         return returnBuffer;
     }
 
@@ -81,13 +88,34 @@ public class MorseDecoder {
          * There are four conditions to handle. Symbols should only be output when you see
          * transitions. You will also have to store how much power or silence you have seen.
          */
-
+        int power = 0;
+        int silence = 0;
+        StringBuilder str = new StringBuilder();
+        for (int x = 0; x < powerMeasurements.length; x++) {
+            if (powerMeasurements[x] < POWER_THRESHOLD) {
+                if (silence > DASH_BIN_COUNT) {
+                    str.append(" ");
+                } else {
+                    str.append("");
+                }
+                power++;
+                silence = 0;
+            } else {
+                 if (power > DASH_BIN_COUNT) {
+                     str.append("-");
+                 } else {
+                    str.append(".");
+                }
+                power = 0;
+                silence++;
+            }
+        }
+        return str.toString();
         // if ispower and waspower
         // else if ispower and not waspower
         // else if issilence and wassilence
         // else if issilence and not wassilence
 
-        return "";
     }
 
     /**
